@@ -1,15 +1,16 @@
 const http = require('http');
 
 const [argDelay = 500, argTime = 2500] = process.argv.slice(2);
+let interval;
+
+const getDate = () => new Date().toUTCString();
 
 const timeInterval = (delay, time) =>
   new Promise((resolve, reject) => {
-    const interval = setInterval(() => {
+    interval = setInterval(() => {
       time -= delay;
 
-      const D = new Date();
-      const date = `${D.getUTCFullYear()}/${D.getUTCMonth()}/${D.getUTCDate()} ` +
-        `${D.getUTCHours()}:${D.getUTCMinutes()}:${D.getUTCSeconds()}`;
+      const date = getDate();
 
       console.log(date);
 
@@ -20,21 +21,18 @@ const timeInterval = (delay, time) =>
     }, delay);
   });
 
-http.createServer((req, res) => {
-  console.log('HTTP server running on port 8080');
-  res.writeHead(200, { 'Content-Type': 'text/html' });
-  res.end();
-}).listen(8080);
+const server = http.createServer().listen(8080);
 
-http.get('http://localhost:8080/', async res => {
-  console.log('Статус ответа: ' + res.statusCode);
+server.on('request', async (req, res) => {
+  if (req.method === 'GET') {
+    if (interval) {
+      clearInterval(interval);
+    }
 
-  const date = await timeInterval(argDelay, argTime);
+    const date = await timeInterval(argDelay, argTime);
 
-  res.on('data', () => date);
-  res.on('end', () => {
-    console.log(`Result: ${date}`);
-  });
-}).on('error', e => {
-  console.log('Статус ошибки: ' + e.message);
+    res.end(date);
+  } else {
+    res.end();
+  }
 });
