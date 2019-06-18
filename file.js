@@ -1,9 +1,9 @@
 const fs = require('fs');
 const path = require('path');
-const readline = require('readline');
 
-let base = './test';
-let result = './result';
+let [base = './test', result = './result', srcDelete = false] = process.argv.slice(2);
+
+srcDelete = srcDelete === 'yes';
 
 const readDir = (base, level) => {
   return new Promise((resolve, reject) => {
@@ -58,48 +58,7 @@ const deleteDir = base => {
   fs.rmdirSync(base);
 };
 
-let srcDelete = false;
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
-
-const question1 = () => {
-  return new Promise((resolve, reject) => {
-    rl.question('Enter source path: ', path => {
-      base = path;
-      resolve();
-    });
-  });
-};
-
-const question2 = () => {
-  return new Promise((resolve, reject) => {
-    rl.question('Enter destination path: ', path => {
-      result = path;
-      resolve();
-    });
-  });
-};
-
-const question3 = () => {
-  return new Promise((resolve, reject) => {
-    rl.question('Delete source dir? [yes/no] ', answer => {
-      answer.toLowerCase() === 'yes'
-        ? srcDelete = true
-        : srcDelete = false;
-      resolve();
-    });
-  });
-};
-
 const main = async () => {
-  await question1();
-  await question2();
-  await question3();
-
-  rl.close();
-
   if (fs.existsSync(base)) {
     if (!fs.existsSync(result)) {
       fs.mkdirSync(result);
