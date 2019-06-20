@@ -6,60 +6,41 @@ let [base = './test', result = './result', srcDelete = false] = process.argv.sli
 
 srcDelete = srcDelete === 'yes';
 
-function countUnreadFiles (base) {
-  const files = fs.readdirSync(base);
+let readDir = function(base, cb) {
+  fs.readdir(base, function(err, list) {
+    if (err) return cb(err);
 
-  files.forEach(item => {
-    let localBase = path.join(base, item);
-    let state = fs.statSync(localBase);
+    let i = 0;
+    (function next() {
+      let item = list[i++];
 
-    if (state.isFile()) {
-      unreadFiles++;
-    } else {
-      countUnreadFiles(localBase);
-    }
-  });
-}
-
-countUnreadFiles(base);
-
-const readDir = (base, level, cb) => {
-  const files = fs.readdirSync(base);
-
-  files.forEach(item => {
-    let localBase = path.join(base, item);
-    let state = fs.statSync(localBase);
-
-    if (state.isDirectory()) {
-      if (!fs.readdirSync(localBase).length) {
-        fs.rmdirSync(localBase);
-      }
-      console.log(' '.repeat(level) + 'DIR: ' + item);
-      readDir(localBase, level + 1, cb);
-    } else {
-      const letterBase = path.join(result, item.charAt(0).toUpperCase());
-
-      if (!fs.existsSync(letterBase)) {
-        fs.mkdirSync(letterBase);
+      if (!item) {
+        return cb();
       }
 
-      fs.createReadStream(localBase)
-        .on('error', (err) => {
-          console.log(err);
-        })
-        .pipe(fs.createWriteStream(path.join(letterBase, item)))
-        .on('error', (err) => {
-          console.log(err);
-        })
-        .on('close', () => {
-          unreadFiles--;
-
-          if (!unreadFiles) {
-            cb();
+      localBase = path.join(base, item);
+      fs.stat(localBase, function(err, stat) {
+        if (stat && stat.isDirectory()) {
+          readDir(localBase, next);
+        } else {
+          const letterBase = path.join(result, item.charAt(0).toUpperCase());
+          
+          if (!fs.existsSync(letterBase)) {
+            fs.mkdirSync(letterBase);
           }
-        });
-      console.log(' '.repeat(level) + 'File: ' + item);
-    }
+
+          fs.createReadStream(localBase)
+          .on('error', (err) => {
+            console.log(err);
+          })
+          .pipe(fs.createWriteStream(path.join(letterBase, item)))
+          .on('error', (err) => {
+            console.log(err);
+          })
+          .on('close', next);
+        }
+      });
+    })();
   });
 };
 
@@ -85,7 +66,10 @@ if (fs.existsSync(base)) {
     fs.mkdirSync(result);
   }
 
-  readDir(base, 0, () => {
+  readDir(base, (err) => {
+    if (err) {
+      console.log(err);
+    }
     if (srcDelete) {
       deleteDir(base);
     }
