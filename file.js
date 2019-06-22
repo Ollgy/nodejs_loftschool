@@ -5,73 +5,85 @@ let [base = './test', result = './result', srcDelete = false] = process.argv.sli
 
 srcDelete = srcDelete === 'yes';
 
-const readDir = (base, level) => {
-  return new Promise((resolve, reject) => {
-    const files = fs.readdirSync(base);
+const writeFile = (readPath, writePath, item) => new Promise((resolve, reject) => {
+  fs.createReadStream(readPath)
+  .on('error', (err) => {
+    return reject(err);
+    console.log(err);
+  })
+  .pipe(fs.createWriteStream(path.join(writePath, item)))
+  .on('error', (err) => {
+    return reject(err);
+    console.log(err);
+  })
+  .on('close', () => resolve());
+});
 
-    files.forEach(item => {
-      let localBase = path.join(base, item);
-      let state = fs.statSync(localBase);
+const deleteFile = (path) => new Promise((resolve, reject) => {
+  fs.unlink(path, (err) => {
+    if (err) {
+      return reject(err)
+    }
+    return resolve();
+  });
+});
 
-      if (state.isDirectory()) {
-        console.log(' '.repeat(level) + 'DIR: ' + item);
-        readDir(localBase, level + 1);
-      } else {
-        const letterBase = path.join(result, item.charAt(0).toUpperCase());
+const deleteDir = (path) => new Promise((resolve, reject) => {
+  fs.rmdir(path, (err) => {
+    if (err) {
+      return reject(err)
+    }
+    return resolve();
+  });
+});
 
-        if (!fs.existsSync(letterBase)) {
-          fs.mkdirSync(letterBase);
+let readDir = (base) => new Promise((resolve, reject) => {
+  fs.readdir(base, (err, list) => {
+    if (err) return reject(err);
+
+    let i = 0;
+    (async function next() {
+      let item = list[i++];
+
+      if (!item) {
+        console.log(base);
+        if (srcDelete) {
+          await deleteDir(base); 
         }
-
-        fs.createReadStream(localBase)
-          .on('error', (err) => {
-            console.log(err);
-            reject(err);
-          })
-          .pipe(fs.createWriteStream(path.join(letterBase, item)))
-          .on('error', (err) => {
-            console.log(err);
-            reject(err);
-          })
-          .on('close', () => resolve());
-
-        console.log(' '.repeat(level) + 'File: ' + item);
+        return resolve();
       }
-    });
+
+      localBase = path.join(base, item);
+      fs.stat(localBase, async (err, stat) => {
+        if (stat && stat.isDirectory()) {
+          await readDir(localBase);
+          next();
+        } else {
+          const letterBase = path.join(result, item.charAt(0).toUpperCase());
+          
+          if (!fs.existsSync(letterBase)) {
+            fs.mkdirSync(letterBase);
+          }
+
+          await writeFile(localBase, letterBase, item);
+
+          if (srcDelete) {
+            await deleteFile(localBase); 
+          }
+          next();
+        }
+      });
+    })();
   });
-};
+});
 
-const deleteDir = base => {
-  const files = fs.readdirSync(base);
-
-  files.forEach(item => {
-    let localBase = path.join(base, item);
-    let state = fs.statSync(localBase);
-
-    if (state.isDirectory()) {
-      deleteDir(localBase);
-    } else {
-      fs.unlinkSync(localBase);
-    }
-  });
-
-  fs.rmdirSync(base);
-};
-
-const main = async () => {
-  if (fs.existsSync(base)) {
-    if (!fs.existsSync(result)) {
-      fs.mkdirSync(result);
-    }
-
-    await readDir(base, 0);
-
-    if (srcDelete) {
-      deleteDir(base);
-    }
-  } else {
-    console.log('Dir is not exist');
+if (fs.existsSync(base)) {
+  if (!fs.existsSync(result)) {
+    fs.mkdirSync(result);
   }
-};
 
-main();
+  readDir(base);
+} else {
+  console.log('Dir is not exist');
+}
+
