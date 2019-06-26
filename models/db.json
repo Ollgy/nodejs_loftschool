@@ -1,0 +1,21 @@
+{
+  "home": [
+  ],
+  "products": [
+    {
+      "name": "wallpaper",
+      "price": "350",
+      "src": "\\upload\\1GhBBeHz238.jpg"
+    }
+  ],
+  "skills": {
+    "age": "4",
+    "concerts": "4",
+    "cities": "5",
+    "years": "6"
+  },
+  "authorize": {
+    "email": "test@test",
+    "password": "123"
+  }
+}
