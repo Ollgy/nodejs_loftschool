@@ -27,6 +27,6 @@ module.exports.post = function (req, res, next) {
     res.redirect('/admin');
   }
 
-  console.log(`email ${req.body.email}`);
-  console.log(`password ${req.body.password}`);
+  console.log(`email ${email}`);
+  console.log(`password ${password}`);
 };
