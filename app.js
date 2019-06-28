@@ -1,48 +1,49 @@
-const express = require('express');
+const Koa = require('koa');
 const path = require('path');
-const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser');
-const session = require('express-session');
-const flash = require('connect-flash');
+const Pug = require('koa-pug');
+const static = require('koa-static');
+const koaBody = require('koa-body');
+const session = require('koa-session');
+const flash = require('koa-flash-simple');
 
-const app = express();
+const db = require('./models/db')();
+global.db = db;
 
-app.set('views', path.join(__dirname + path.normalize('/views')));
-app.set('view engine', 'pug');
+const app = new Koa();
 
-app.use(cookieParser('keyboard cat'));
-app.use(session({ 
-  cookie: {
-    maxAge: 60000 
-  },
-  secret: 'keyboard cat',
-  resave: false,
-  saveUninitialized: false
-}));
+const pug = new Pug({
+  viewPath: path.join(__dirname + path.normalize('/views')),
+  basedir: path.join(__dirname + path.normalize('/views')),
+  pretty: true,
+  noCache: true,
+  app: app
+});
+
+app.use(static('./public', { index: false }));
+
+app.use(session({
+  key: 'keyboard cat',
+  maxAge: 600000,
+  overwrite: true,
+  httpOnly: true,
+  signed: false,
+  rolling: false,
+  renew: false
+}, app));
 
 app.use(flash());
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(koaBody({
+  formidable: {
+    uploadDir: './public/upload/'
+  },
+  multipart: true
+}));
 
-app.use(express.static(path.join(__dirname + '/public'), { index: false }));
+const router = require('./routes');
+app.use(router.routes());
+app.use(router.allowedMethods())
 
-app.use('/', require('./routes/index'));
-
-// catch 404 and forward to error handler
-app.use(function (req, res, next) {
-  let err = new Error('Not Found');
-  err.status = 404;
-  next(err);
-});
-  
-// error handler
-app.use(function (err, req, res, next) {
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error', { message: err.message, error: err });
-});
-  
 const server = app.listen(process.env.PORT || 3000, function () {
   console.log('Сервер запущен на порте: ' + server.address().port);
 });

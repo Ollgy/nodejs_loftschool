@@ -1,21 +1,41 @@
 {
-  "home": [
-  ],
-  "products": [
-    {
-      "name": "wallpaper",
-      "price": "350",
-      "src": "\\upload\\1GhBBeHz238.jpg"
-    }
-  ],
-  "skills": {
-    "age": "4",
-    "concerts": "4",
-    "cities": "5",
-    "years": "6"
-  },
-  "authorize": {
-    "email": "test@test",
-    "password": "123"
-  }
+    "authorize": {
+        "email": "test@test",
+        "password": "123"
+    },
+    "skills": {
+        "age": "1",
+        "concerts": "1",
+        "cities": "1",
+        "years": "1"
+    },
+    "products": [
+        {
+            "name": "lock",
+            "price": "100",
+            "src": "\\upload\\o32AZ41CDmY.jpg"
+        },
+        {
+            "name": "wallpaper",
+            "price": "10",
+            "src": "\\upload\\-wqnhKIgWLs.jpg"
+        },
+        {
+            "name": "lamp",
+            "price": "10",
+            "src": "\\upload\\Aq5SJOi85n0.jpg"
+        },
+        {
+            "name": "colors",
+            "price": "100",
+            "src": "\\upload\\b6GRGauuyLE.jpg"
+        }
+    ],
+    "home": [
+        {
+            "name": "wallpaper",
+            "email": "test@test",
+            "message": "Wallpaper"
+        }
+    ]
 }
