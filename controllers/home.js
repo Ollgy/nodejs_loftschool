@@ -1,8 +1,8 @@
-const emitter = require('../routes/emitter');
+const engine = require('../routes/engine');
 
 module.exports.get = async (ctx) => {
   const data = await new Promise((resolve, reject) => {
-    emitter.emit('get/index', ctx, resolve, reject);
+    engine.emit('get/index', ctx, resolve, reject);
   });
   
   try {
@@ -21,7 +21,7 @@ module.exports.get = async (ctx) => {
 module.exports.post = async (ctx) => {  
   try {
     await new Promise((resolve, reject) => {
-      emitter.emit('post/index', ctx.request.body, resolve, reject);
+      engine.emit('post/index', ctx.request.body, resolve, reject);
     });
    
     ctx.redirect('/');

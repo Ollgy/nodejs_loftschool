@@ -1,4 +1,4 @@
-const emitter = require('../routes/emitter');
+const engine = require('../routes/engine');
 
 module.exports.get = async (ctx) => {
   try {
@@ -18,7 +18,7 @@ module.exports.post = async (ctx) => {
   const { email, password } = ctx.request.body;
 
   await new Promise((resolve, reject) => {
-    emitter.emit('post/login', ctx.request.body, resolve, reject);
+    engine.emit('post/login', ctx.request.body, resolve, reject);
   });
    
   if (!email || !password) {

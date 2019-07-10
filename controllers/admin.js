@@ -1,22 +1,18 @@
 
-const emitter = require('../routes/emitter');
+const engine = require('../routes/engine');
 
 module.exports.get = async (ctx) => {
-  if(ctx.session.isAuthorized) {
-    try {
-      ctx.render('pages/admin', { title: 'Admin', 
-        msgskill: ctx.flash && ctx.flash.get() ? ctx.flash.get().msgSkill : null,
-        msgfile: ctx.flash && ctx.flash.get() ? ctx.flash.get().msgFile : null
-      });
-    }
-    catch(err) {
-      console.error('err', err);
-      ctx.status = 404;
-      ctx.render('error');
-    }
-  } else {
-    ctx.redirect('/login');
-  } 
+  try {
+    ctx.render('pages/admin', { title: 'Admin', 
+      msgskill: ctx.flash && ctx.flash.get() ? ctx.flash.get().msgSkill : null,
+      msgfile: ctx.flash && ctx.flash.get() ? ctx.flash.get().msgFile : null
+    });
+  }
+  catch(err) {
+    console.error('err', err);
+    ctx.status = 404;
+    ctx.render('error');
+  }
 };
 
 module.exports.post_skills = async (ctx) => {
@@ -24,7 +20,7 @@ module.exports.post_skills = async (ctx) => {
 
   try {
     await new Promise((resolve, reject) => {
-      emitter.emit('post_skills/admin', ctx.request.body, resolve, reject);
+      engine.emit('post_skills/admin', ctx.request.body, resolve, reject);
     });
 
     ctx.flash.set({ msgSkill: 'Success!' });
@@ -38,7 +34,7 @@ module.exports.post_skills = async (ctx) => {
 module.exports.post_upload = async (ctx) => {
   try {
     await new Promise(async (resolve, reject) => {
-      emitter.emit('post_upload/admin', ctx, resolve, reject);
+      engine.emit('post_upload/admin', ctx, resolve, reject);
     });
 
     ctx.flash.set({ msgFile: 'Success!'});
