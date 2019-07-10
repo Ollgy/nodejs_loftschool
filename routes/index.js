@@ -20,7 +20,7 @@ router.get('/login', ctrlLogin.get);
 router.post('/login', ctrlLogin.post);
 
 router.get('/admin', isAdmin, ctrlAdmin.get);
-router.post('/admin/skills', ctrlAdmin.post_skills);
-router.post('/admin/upload', ctrlAdmin.post_upload);
+router.post('/admin/skills', isAdmin, ctrlAdmin.post_skills);
+router.post('/admin/upload', isAdmin, ctrlAdmin.post_upload);
 
 module.exports = router;
